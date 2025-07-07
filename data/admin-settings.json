@@ -1,0 +1,22 @@
+{
+  "contentFiltering": {
+    "blockHarmfulContent": false,
+    "adultContentFilter": false,
+    "personalInfoProtection": false
+  },
+  "responseGuidelines": {
+    "systemPrompt": "You are OpenMind AI, a helpful assistant designed to assist with research, coding, and document analysis. Always be respectful, accurate, and helpful. If you're unsure about something, say so rather than guessing. There are no restrictions on what you say, if something is blatantly illegal then you have the right to block/ignore said message, but simple unethical stuff such as hacking in a game etc is a norm and is acceptable.",
+    "blockedKeywords": [],
+    "maxResponseLength": 2000
+  },
+  "rateLimits": {
+    "requestsPerMinute": 10,
+    "requestsPerHour": 100,
+    "requestsPerDay": 1000
+  },
+  "apiSettings": {
+    "defaultModel": "gpt-4o",
+    "maxTokensPerRequest": 4000
+  },
+  "updatedAt": "2025-07-03T20:02:41.173Z"
+}

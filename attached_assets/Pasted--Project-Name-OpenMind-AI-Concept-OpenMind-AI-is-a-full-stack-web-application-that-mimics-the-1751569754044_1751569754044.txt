@@ -1,0 +1,153 @@
+🌐 Project Name: OpenMind AI
+🧠 Concept
+
+OpenMind AI is a full-stack web application that mimics the functionality of ChatGPT, providing users with an AI chatbot for:
+
+    Research Assistance: Academic, technical, or general topic exploration.
+
+    Coding Help: Debugging, writing, explaining, or optimizing code in multiple languages.
+
+    Document Analysis: Let users upload text or code for AI analysis.
+
+    Personalized Workspace: Save chat sessions, bookmarks, and prompts.
+
+It uses the OpenAI GPT-4 API under the hood to power the AI chatbot.
+🧩 Core Features
+1. 🔐 User Authentication
+
+    Sign up, login, logout
+
+    JWT-based session authentication
+
+    Password hashing with bcrypt
+
+    Role-based access (admin/user)
+
+    OAuth 2.0 support (Google login, optional)
+
+2. 💬 AI Chat Interface
+
+    Real-time chat interface like ChatGPT
+
+    Uses OpenAI API key (user or system-wide)
+
+    Markdown support with syntax highlighting
+
+    Threaded chat history with session saving
+
+3. 🧾 Chat History + Workspace
+
+    Save chat sessions
+
+    Rename, delete, or search past sessions
+
+    Tag chats by topic (e.g. coding, science, health)
+
+    “Favorite” responses for quick reference
+
+4. 🧪 Research Tools
+
+    Quick search assistant (like a mini search engine)
+
+    Summarize long articles or papers (URL or text input)
+
+    Document upload (PDF, DOCX, TXT) → AI parses content
+
+    Inline citation support for academic help
+
+5. 🧑‍💻 Coding Assistant Tools
+
+    Code generation, explanation, and debugging
+
+    Multi-language syntax support (Python, JavaScript, C++, etc.)
+
+    IDE-style code view
+
+    Optional playground to test small Python snippets via a backend sandbox (restricted)
+
+🏗️ Tech Stack
+🔧 Frontend
+
+    React + TypeScript
+
+    Next.js (for SSR/SEO benefits)
+
+    Tailwind CSS for styling
+
+    React Query or SWR for data fetching
+
+    Zustand or Redux for state management
+
+🖥️ Backend
+
+    Node.js + Express
+
+    REST API (or GraphQL if preferred)
+
+    OpenAI API integration
+
+    JWT authentication
+
+    MongoDB (with Mongoose) or PostgreSQL
+
+    Rate-limiting and abuse prevention
+
+🗃️ Database
+
+    MongoDB or PostgreSQL
+
+        Users
+
+        Chat sessions
+
+        Roles & settings
+
+☁️ Deployment
+
+    Vercel (frontend)
+
+    Render / Railway / Fly.io / Heroku (backend)
+
+    MongoDB Atlas (cloud DB)
+
+    S3-compatible storage for file uploads (optional)
+
+🔐 Monetization / Admin Features (Optional)
+
+    Admin panel to manage users, chat limits, and logs
+
+    Stripe integration for premium usage limits or plans
+
+    Track API usage (OpenAI cost control)
+
+🚀 Bonus Features (Stretch Goals)
+
+    PDF highlighting + AI notes generation
+
+    Chrome extension for research summarization
+
+    Mobile-friendly PWA or native wrapper with Capacitor
+
+    GPT function-calling for plugin-like behavior (e.g., fetch URL, code execution, etc.)
+
+    Voice chat using Web Speech API
+
+🧠 How It Works (Simplified Flow)
+
+    User signs up and logs in
+
+    Enters a chat session with a prompt (e.g., "Explain multithreading in C++")
+
+    Backend sends the prompt to the OpenAI API using a stored API key
+
+    OpenAI returns response → shown in chat
+
+    Chat is stored in database linked to the user for future reference
+
+🔑 API Key Use
+
+    Site-wide key stored securely (server-side), or
+
+    Optionally allow users to input their own OpenAI API keys
+
+    Implement rate limits per user to control costs

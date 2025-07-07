@@ -1,0 +1,49 @@
+[
+  {
+    "id": "7eb16d88-287b-4984-8146-0da2e1b1ceaa",
+    "username": "admin",
+    "email": "kodex@riseup.net",
+    "password": "$2b$10$L.u0ua9k.umxinaUoFWe6.6E51qZmZN.qpz5Uu3wtM2wWouF226Sm",
+    "role": "admin",
+    "plan": "pro",
+    "status": "active",
+    "settings": {
+      "theme": "light",
+      "language": "en",
+      "defaultModel": "gpt-4o",
+      "saveChatHistory": true,
+      "usePersonalApiKey": false,
+      "personalOpenaiApiKey": ""
+    },
+    "usage": {
+      "tokensUsed": 0,
+      "requestsToday": 23,
+      "lastRequest": "2025-07-03T20:06:33.363Z"
+    },
+    "createdAt": "2025-07-03T19:31:43.140Z",
+    "updatedAt": "2025-07-03T20:06:33.364Z"
+  },
+  {
+    "id": "0d5b0d0e-7b69-403e-9c40-15d8f4f6da90",
+    "username": "test",
+    "email": "doj@riseup.net",
+    "password": "$2b$10$DfJ7ECe6vSHxy2pJWJ.Viu7M3UCKuM0Owg21hXsw1YTWuGg6roQKm",
+    "role": "user",
+    "plan": "free",
+    "status": "active",
+    "settings": {
+      "theme": "light",
+      "language": "en",
+      "defaultModel": "gpt-4o",
+      "saveChatHistory": true,
+      "usePersonalApiKey": false
+    },
+    "usage": {
+      "tokensUsed": 0,
+      "requestsToday": 1,
+      "lastRequest": "2025-07-03T20:09:17.481Z"
+    },
+    "createdAt": "2025-07-03T20:08:02.787Z",
+    "updatedAt": "2025-07-03T20:09:17.481Z"
+  }
+]
