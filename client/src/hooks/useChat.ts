@@ -70,9 +70,9 @@ export function useChatMutations() {
   });
 
   const updateChatMutation = useMutation({
-    mutationFn: async ({ id, ...data }: { id: string } & Partial<Chat>): Promise<Chat> => {
+    mutationFn: async (data: Chat): Promise<Chat> => {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/chats/${id}`, {
+      const response = await fetch(`/api/chats/${data.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -94,7 +94,7 @@ export function useChatMutations() {
   });
 
   const deleteChatMutation = useMutation({
-    mutationFn: async (chatId: string): Promise<void> => {
+    mutationFn: async (chatId: string, options?: { onSuccess?: () => void; onError?: (error: any) => void }): Promise<void> => {
       const token = localStorage.getItem('token');
       const response = await fetch(`/api/chats/${chatId}`, {
         method: 'DELETE',
@@ -139,10 +139,18 @@ export function useChatMutations() {
   });
 
   return {
-    createChat: createChatMutation.mutate,
-    updateChat: updateChatMutation.mutate,
-    deleteChat: deleteChatMutation.mutate,
-    sendMessage: sendMessageMutation.mutate,
+    createChat: (data: any, options?: { onSuccess?: (chat: Chat) => void; onError?: (error: any) => void }) => {
+      createChatMutation.mutate(data, options);
+    },
+    updateChat: (data: Chat, options?: { onSuccess?: () => void; onError?: (error: any) => void }) => {
+      updateChatMutation.mutate(data, options);
+    },
+    deleteChat: (chatId: string, options?: { onSuccess?: () => void; onError?: (error: any) => void }) => {
+      deleteChatMutation.mutate(chatId, options);
+    },
+    sendMessage: (data: any, options?: { onSuccess?: (response: any) => void; onError?: (error: any) => void }) => {
+      sendMessageMutation.mutate(data, options);
+    },
     isCreatingChat: createChatMutation.isPending,
     isUpdatingChat: updateChatMutation.isPending,
     isDeletingChat: deleteChatMutation.isPending,

@@ -16,7 +16,10 @@ import {
   Star,
   X,
   Trash2,
-  Edit
+  Edit,
+  Sparkles,
+  Clock,
+  Archive
 } from 'lucide-react';
 import { Chat } from '@/types';
 import { formatRelativeTime, truncateText } from '@/lib/utils';
@@ -25,11 +28,13 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 interface ChatSidebarProps {
   onClose?: () => void;
   onChatSelect?: (chat: Chat) => void;
+  onNewChat?: () => void;
+  currentChatId?: string;
 }
 
-export default function ChatSidebar({ onClose, onChatSelect }: ChatSidebarProps) {
+export default function ChatSidebar({ onClose, onChatSelect, onNewChat, currentChatId }: ChatSidebarProps) {
   const { user, logout } = useAuth();
-  const { data: chats, isLoading } = useChats();
+  const { data: chats, isLoading, refetch } = useChats();
   const { createChat, deleteChat, updateChat } = useChatMutations();
   const [searchQuery, setSearchQuery] = useState('');
   const [editingChatId, setEditingChatId] = useState<string | null>(null);
@@ -45,15 +50,24 @@ export default function ChatSidebar({ onClose, onChatSelect }: ChatSidebarProps)
     )
   ) || [];
 
+  // Sort chats by most recent first
+  const sortedChats = filteredChats.sort((a, b) => 
+    new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+  );
+
   const handleNewChat = () => {
-    // This will be handled by the parent component
+    onNewChat?.();
     if (onClose) onClose();
   };
 
   const handleDeleteChat = (chatId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (window.confirm('Are you sure you want to delete this chat?')) {
-      deleteChat(chatId);
+      deleteChat(chatId, {
+        onSuccess: () => {
+          refetch();
+        }
+      });
     }
   };
 
@@ -65,7 +79,14 @@ export default function ChatSidebar({ onClose, onChatSelect }: ChatSidebarProps)
 
   const handleSaveEdit = (chatId: string) => {
     if (editingTitle.trim()) {
-      updateChat({ id: chatId, title: editingTitle.trim() });
+      updateChat({ 
+        ...chats?.find(c => c.id === chatId)!, 
+        title: editingTitle.trim() 
+      }, {
+        onSuccess: () => {
+          refetch();
+        }
+      });
     }
     setEditingChatId(null);
     setEditingTitle('');
@@ -76,19 +97,45 @@ export default function ChatSidebar({ onClose, onChatSelect }: ChatSidebarProps)
     setEditingTitle('');
   };
 
+  const handleToggleFavorite = (chat: Chat, e: React.MouseEvent) => {
+    e.stopPropagation();
+    updateChat({ 
+      ...chat, 
+      isFavorite: !chat.isFavorite 
+    }, {
+      onSuccess: () => {
+        refetch();
+      }
+    });
+  };
+
   const getInitials = (name: string) => {
     return name.split(' ').map(word => word[0]).join('').toUpperCase();
+  };
+
+  const getChatPreview = (chat: Chat) => {
+    const lastMessage = chat.messages[chat.messages.length - 1];
+    if (!lastMessage) return 'No messages';
+    
+    if (lastMessage.role === 'user') {
+      return lastMessage.content;
+    } else {
+      return `AI: ${lastMessage.content}`;
+    }
   };
 
   return (
     <div className="bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col h-full w-full">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
             <Brain className="h-5 w-5 text-white" />
           </div>
-          <span className="font-semibold text-gray-900 dark:text-white">OpenMind AI</span>
+          <div>
+            <span className="font-bold text-gray-900 dark:text-white">OpenMind AI</span>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Free GPT-4</p>
+          </div>
         </div>
         {onClose && (
           <Button variant="ghost" size="icon" onClick={onClose} className="md:hidden">
@@ -101,7 +148,7 @@ export default function ChatSidebar({ onClose, onChatSelect }: ChatSidebarProps)
       <div className="p-4">
         <Button
           onClick={handleNewChat}
-          className="w-full bg-primary hover:bg-primary/90 text-white font-medium"
+          className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
         >
           <Plus className="h-4 w-4 mr-2" />
           New Chat
@@ -113,10 +160,10 @@ export default function ChatSidebar({ onClose, onChatSelect }: ChatSidebarProps)
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Search chats..."
+            placeholder="Search conversations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600"
           />
         </div>
       </div>
@@ -124,28 +171,38 @@ export default function ChatSidebar({ onClose, onChatSelect }: ChatSidebarProps)
       <ScrollArea className="flex-1 px-4">
         {/* Recent Chats */}
         <div className="mb-6">
-          <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-            Recent Chats
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              Recent Conversations
+            </h3>
+            <span className="text-xs text-gray-400">{sortedChats.length}</span>
+          </div>
           
           {isLoading ? (
             <div className="space-y-2">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="animate-pulse">
-                  <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                  <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
                 </div>
               ))}
             </div>
-          ) : filteredChats.length > 0 ? (
+          ) : sortedChats.length > 0 ? (
             <div className="space-y-1">
-              {filteredChats.map((chat) => (
+              {sortedChats.map((chat) => (
                 <div
                   key={chat.id}
-                  className="group flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                  className={`group flex items-center justify-between p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-all duration-200 ${
+                    currentChatId === chat.id ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' : ''
+                  }`}
                   onClick={() => onChatSelect?.(chat)}
                 >
                   <div className="flex items-center space-x-3 flex-1 min-w-0">
-                    <MessageCircle className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                    <div className="relative">
+                      <MessageCircle className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                      {chat.isFavorite && (
+                        <Star className="h-2 w-2 text-yellow-400 absolute -top-1 -right-1" />
+                      )}
+                    </div>
                     <div className="flex-1 min-w-0">
                       {editingChatId === chat.id ? (
                         <Input
@@ -166,25 +223,36 @@ export default function ChatSidebar({ onClose, onChatSelect }: ChatSidebarProps)
                             {chat.title}
                           </p>
                           <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                            {chat.messages.length > 0 
-                              ? truncateText(chat.messages[chat.messages.length - 1].content, 40)
-                              : 'No messages'
-                            }
+                            {truncateText(getChatPreview(chat), 50)}
                           </p>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <Clock className="h-3 w-3 text-gray-400" />
+                            <span className="text-xs text-gray-400">
+                              {formatRelativeTime(new Date(chat.updatedAt))}
+                            </span>
+                            {chat.messages.length > 0 && (
+                              <>
+                                <span className="text-gray-400">•</span>
+                                <span className="text-xs text-gray-400">
+                                  {chat.messages.length} messages
+                                </span>
+                              </>
+                            )}
+                          </div>
                         </>
                       )}
                     </div>
                   </div>
                   
                   <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {chat.tags.length > 0 && (
-                      <span className="text-xs text-gray-400 px-1">
-                        {chat.tags[0]}
-                      </span>
-                    )}
-                    {chat.isFavorite && (
-                      <Star className="h-3 w-3 text-yellow-400" />
-                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={(e) => handleToggleFavorite(chat, e)}
+                    >
+                      <Star className={`h-3 w-3 ${chat.isFavorite ? 'text-yellow-400 fill-current' : 'text-gray-400'}`} />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -206,9 +274,15 @@ export default function ChatSidebar({ onClose, onChatSelect }: ChatSidebarProps)
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
-              {searchQuery ? 'No chats found' : 'No chats yet'}
-            </p>
+            <div className="text-center py-8">
+              <MessageCircle className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {searchQuery ? 'No conversations found' : 'No conversations yet'}
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                Start a new chat to begin
+              </p>
+            </div>
           )}
         </div>
 
@@ -216,32 +290,32 @@ export default function ChatSidebar({ onClose, onChatSelect }: ChatSidebarProps)
 
         {/* Quick Actions */}
         <div className="mb-6">
-          <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+          <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
             Quick Actions
           </h3>
           <div className="space-y-1">
             <Button
               variant="ghost"
-              className="w-full justify-start text-left"
+              className="w-full justify-start text-left hover:bg-blue-50 dark:hover:bg-blue-900/20"
               onClick={() => {/* Handle upload */}}
             >
-              <Upload className="h-4 w-4 mr-3" />
+              <Upload className="h-4 w-4 mr-3 text-blue-600" />
               Upload Document
             </Button>
             <Button
               variant="ghost"
-              className="w-full justify-start text-left"
+              className="w-full justify-start text-left hover:bg-green-50 dark:hover:bg-green-900/20"
               onClick={() => {/* Handle code assistant */}}
             >
-              <Code className="h-4 w-4 mr-3" />
+              <Code className="h-4 w-4 mr-3 text-green-600" />
               Code Assistant
             </Button>
             <Button
               variant="ghost"
-              className="w-full justify-start text-left"
+              className="w-full justify-start text-left hover:bg-purple-50 dark:hover:bg-purple-900/20"
               onClick={() => {/* Handle research tool */}}
             >
-              <Search className="h-4 w-4 mr-3" />
+              <Search className="h-4 w-4 mr-3 text-purple-600" />
               Research Tool
             </Button>
           </div>
@@ -250,33 +324,35 @@ export default function ChatSidebar({ onClose, onChatSelect }: ChatSidebarProps)
         <Separator className="my-4" />
 
         {/* Favorites */}
-        <div className="mb-6">
-          <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-            Favorites
-          </h3>
-          <div className="space-y-1">
-            {chats?.filter(chat => chat.isFavorite).map((chat) => (
-              <div
-                key={chat.id}
-                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
-                onClick={() => onChatSelect?.(chat)}
-              >
-                <Star className="h-4 w-4 text-yellow-400 flex-shrink-0" />
-                <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
-                  {truncateText(chat.title, 25)}
-                </span>
-              </div>
-            ))}
+        {sortedChats.some(chat => chat.isFavorite) && (
+          <div className="mb-6">
+            <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+              Favorites
+            </h3>
+            <div className="space-y-1">
+              {sortedChats.filter(chat => chat.isFavorite).slice(0, 5).map((chat) => (
+                <div
+                  key={chat.id}
+                  className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                  onClick={() => onChatSelect?.(chat)}
+                >
+                  <Star className="h-4 w-4 text-yellow-400 flex-shrink-0 fill-current" />
+                  <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                    {truncateText(chat.title, 25)}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </ScrollArea>
 
       {/* User Profile */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Avatar>
-              <AvatarFallback className="bg-blue-600 text-white">
+              <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
                 {user ? getInitials(user.username) : 'U'}
               </AvatarFallback>
             </Avatar>
@@ -284,9 +360,16 @@ export default function ChatSidebar({ onClose, onChatSelect }: ChatSidebarProps)
               <p className="text-sm font-medium text-gray-900 dark:text-white">
                 {user?.username || 'User'}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                {user?.plan || 'Free'} Plan
-              </p>
+              <div className="flex items-center space-x-2">
+                <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                  {user?.plan || 'Free'} Plan
+                </span>
+                {user?.plan === 'free' && (
+                  <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+                    Free GPT-4
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           <Button

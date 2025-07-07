@@ -10,14 +10,20 @@ import RegisterPage from "@/pages/auth/register";
 import ChatPage from "@/pages/chat";
 import AdminPage from "@/pages/admin";
 import Layout from "@/components/layout/Layout";
+import { useState } from "react";
+import { Chat } from "@/types";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
+  const [currentChatId, setCurrentChatId] = useState<string | undefined>();
   
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading OpenMind AI...</p>
+        </div>
       </div>
     );
   }
@@ -26,7 +32,25 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <LoginPage />;
   }
   
-  return <Layout>{children}</Layout>;
+  const handleChatSelect = (chat: Chat) => {
+    setCurrentChatId(chat.id);
+    // The chat page will handle the actual chat selection
+  };
+
+  const handleNewChat = () => {
+    setCurrentChatId(undefined);
+    // The chat page will handle creating a new chat
+  };
+  
+  return (
+    <Layout 
+      onChatSelect={handleChatSelect}
+      onNewChat={handleNewChat}
+      currentChatId={currentChatId}
+    >
+      {children}
+    </Layout>
+  );
 }
 
 function AdminRoute({ children }: { children: React.ReactNode }) {

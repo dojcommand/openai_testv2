@@ -86,7 +86,7 @@
 
 @layer components {
   .chat-message {
-    animation: fadeInUp 0.3s ease-out;
+    animation: fadeInUp 0.4s ease-out;
   }
 
   .typing-indicator {
@@ -99,7 +99,7 @@
 
   .message-actions {
     opacity: 0;
-    transition: opacity 0.2s ease-in-out;
+    transition: opacity 0.3s ease-in-out;
   }
 
   .message-container:hover .message-actions {
@@ -112,12 +112,12 @@
 
   .file-upload-zone {
     border: 2px dashed hsl(217, 32%, 17.5%);
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
   }
 
   .file-upload-zone:hover {
-    border-color: hsl(142, 76%, 36%);
-    background-color: hsl(138, 76%, 97%);
+    border-color: hsl(217, 91%, 60%);
+    background-color: hsl(214, 100%, 97%);
   }
 
   .dark .file-upload-zone {
@@ -125,8 +125,8 @@
   }
 
   .dark .file-upload-zone:hover {
-    border-color: hsl(142, 76%, 36%);
-    background-color: hsl(142, 76%, 7%);
+    border-color: hsl(217, 91%, 60%);
+    background-color: hsl(217, 91%, 7%);
   }
 
   .code-block {
@@ -139,12 +139,40 @@
   .dark .code-block {
     background: hsl(222, 84%, 4.9%);
   }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .animate-slideUp {
+    animation: slideUp 0.4s ease-out;
+  }
 }
 
 @keyframes fadeInUp {
   from {
     opacity: 0;
     transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
   to {
     opacity: 1;

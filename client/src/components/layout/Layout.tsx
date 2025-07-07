@@ -6,12 +6,16 @@ import { Menu, Settings, Shield, Share2, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import SettingsModal from '@/components/settings/SettingsModal';
 import AdminPanel from '@/components/admin/AdminPanel';
+import { Chat } from '@/types';
 
 interface LayoutProps {
   children: React.ReactNode;
+  onChatSelect?: (chat: Chat) => void;
+  onNewChat?: () => void;
+  currentChatId?: string;
 }
 
-export default function Layout({ children }: LayoutProps) {
+export default function Layout({ children, onChatSelect, onNewChat, currentChatId }: LayoutProps) {
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -24,14 +28,19 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       {/* Sidebar */}
-      <div className={`${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:relative z-30 h-full w-80 md:w-64 transition-transform duration-300 ease-in-out`}>
-        <ChatSidebar onClose={() => setIsSidebarOpen(false)} />
+      <div className={`${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:relative z-30 h-full w-80 md:w-72 transition-transform duration-300 ease-in-out`}>
+        <ChatSidebar 
+          onClose={() => setIsSidebarOpen(false)} 
+          onChatSelect={onChatSelect}
+          onNewChat={onNewChat}
+          currentChatId={currentChatId}
+        />
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
@@ -41,14 +50,6 @@ export default function Layout({ children }: LayoutProps) {
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <div className="flex items-center space-x-3">
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Chat Session
-              </h1>
-              <span className="bg-primary text-white text-xs px-2 py-1 rounded-full">
-                Active
-              </span>
-            </div>
           </div>
           
           <div className="flex items-center space-x-3">
